@@ -87,26 +87,6 @@ fastDFS是c语言编写的一款开源的分布式文件系统（余庆淘宝架
         
             ![1527004352706](doc/assets/fdfs-file-down.png)
 
-### Redis
-
-
-
-
-
-
-
-
-
-### Nginx
-
-
-
-
-
-
-
-
-
 ### FastCGI
 
 
