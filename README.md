@@ -1,13 +1,12 @@
-# Distributed-file-servers
+# Distributed-file-server
 
 ---
 
-Distributed file servers分布式文件服务器
+Distributed file servers分布式文件服务器，本项目利用fastdfs进行核心的文件存储操作，编写fastcgi程序用于处理来自用户的各种请求（包括登录、注册、文件上传、文件下载、文件分享等）
 
-- 文件资源：https://pan.baidu.com/s/1gnCkeL54td2iqAsHJBj6gQ?pwd=lt0r
-- 课程资源：https://www.bilibili.com/video/BV1YG41137Vk/
+- 主要技术点：fastdfs+fastcgi+nginx+mysql+redis
 
-### 项目架构
+### 分布式文件服务器
 
 该项目是一个文件服务器，其主要功能是提供文件的上传、文件保存，当有需求时可以将文件下载的功能。
 
@@ -16,9 +15,8 @@ Distributed file servers分布式文件服务器
 ![image-20230410081744267](doc/assets/image-20230410081744267.png)
 
 1. 客户端
-
-    - b/s：必须使用http协议
-    - c/s：协议可以随意选择，Qt -> http
+    - b/s：必须使用http协议（浏览器）
+    - c/s：协议可以随意选择 Qt -> http（桌面应用）
 
 2. 服务器
 
@@ -47,7 +45,7 @@ Distributed file servers分布式文件服务器
     - 存储文件内容
     - 供用户下载
 
-### FASTDFS分布式文件系统
+### fastDFS分布式文件系统
 
 fastDFS是c语言编写的一款开源的分布式文件系统（余庆淘宝架构师）。为互联网量身定制，充分考虑了冗余备份、负载均衡、线性扩容等机制，注重高可用、高性能等指标。可以很容易搭建一套高性能的文件服务器集群提供<font color='#BAOC2F'>文件上传、下载</font>等服务。图床、网盘
 
@@ -87,33 +85,7 @@ fastDFS是c语言编写的一款开源的分布式文件系统（余庆淘宝架
         
             ![1527004352706](doc/assets/fdfs-file-down.png)
 
-### FastCGI
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Nginx+fastDFS
-
-
-
-
-
-
-
-
-
-
-
-### 部署
+### 快速部署
 
 服务器部署步骤:
 
