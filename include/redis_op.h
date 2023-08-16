@@ -1,30 +1,31 @@
-/**
- * @file   redis_api.h
- * @brief  redis 封装接口
- */
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: redis_op.h
+ Update Time: Wed 16 Aug 2023 17:57:23 CST
+ brief: redis 封装接口
+*/
 
 #ifndef _REDIS_OP_H_
 #define _REDIS_OP_H_
 
-#include <hiredis.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include "make_log.h"
+#include <hiredis.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
+#define REDIS_LOG_MODULE "database"
+#define REDIS_LOG_PROC "redis"
 
-#define REDIS_LOG_MODULE          "database"
-#define REDIS_LOG_PROC            "redis"
-
-#define REDIS_COMMAND_SIZE        300            /* redis Command 指令最大长度 */
-#define FIELD_ID_SIZE            100            /* redis hash表field域字段长度 */
-#define VALUES_ID_SIZE           1024            /* redis        value域字段长度 */
-typedef char (*RCOMMANDS)[REDIS_COMMAND_SIZE];/* redis 存放批量 命令字符串数组类型 */
-typedef char (*RFIELDS)[FIELD_ID_SIZE];        /* redis hash表存放批量field字符串数组类型 */
+#define REDIS_COMMAND_SIZE 300 /* redis Command 指令最大长度 */
+#define FIELD_ID_SIZE 100 /* redis hash表field域字段长度 */
+#define VALUES_ID_SIZE 1024 /* redis        value域字段长度 */
+typedef char (*RCOMMANDS)[REDIS_COMMAND_SIZE]; /* redis 存放批量 命令字符串数组类型 */
+typedef char (*RFIELDS)[FIELD_ID_SIZE]; /* redis hash表存放批量field字符串数组类型 */
 
 //数组指针类型，其变量指向 char[1024]
-typedef char (*RVALUES)[VALUES_ID_SIZE];    /* redis 表存放批量value字符串数组类型 */
-
+typedef char (*RVALUES)[VALUES_ID_SIZE]; /* redis 表存放批量value字符串数组类型 */
 
 /* -------------------------------------------*/
 /**
@@ -38,8 +39,7 @@ typedef char (*RVALUES)[VALUES_ID_SIZE];    /* redis 表存放批量value字符�
  *			失败返回NULL
  */
 /* -------------------------------------------*/
-redisContext* rop_connectdb_nopwd(char *ip_str, char* port_str);
-
+redisContext* rop_connectdb_nopwd(char* ip_str, char* port_str);
 
 /* -------------------------------------------*/
 /**
@@ -54,7 +54,7 @@ redisContext* rop_connectdb_nopwd(char *ip_str, char* port_str);
  *            失败返回NULL
  */
 /* -------------------------------------------*/
-redisContext* rop_connectdb(char *ip_str, char* port_str, char *pwd);
+redisContext* rop_connectdb(char* ip_str, char* port_str, char* pwd);
 
 /* -------------------------------------------*/
 /**
@@ -68,7 +68,7 @@ redisContext* rop_connectdb(char *ip_str, char* port_str, char *pwd);
  *            失败返回NULL
  */
 /* -------------------------------------------*/
-redisContext* rop_connectdb_unix(char *sock_path, char *pwd);
+redisContext* rop_connectdb_unix(char* sock_path, char* pwd);
 
 /* -------------------------------------------*/
 /**
@@ -84,8 +84,7 @@ redisContext* rop_connectdb_unix(char *sock_path, char *pwd);
  *        失败返回NULL
  */
 /* -------------------------------------------*/
-redisContext* rop_connectdb_timeout(char* ip_str, char *port_str, struct timeval *timeout);
-
+redisContext* rop_connectdb_timeout(char* ip_str, char* port_str, struct timeval* timeout);
 
 /* -------------------------------------------*/
 /**
@@ -108,7 +107,7 @@ void rop_disconnect(redisContext* conn);
  *            0  成功
  */
 /* -------------------------------------------*/
-int rop_selectdatabase(redisContext *conn, unsigned int db_no);
+int rop_selectdatabase(redisContext* conn, unsigned int db_no);
 
 /* -------------------------------------------*/
 /**
@@ -121,7 +120,7 @@ int rop_selectdatabase(redisContext *conn, unsigned int db_no);
  *            0  成功
  */
 /* -------------------------------------------*/
-int rop_flush_database(redisContext *conn);
+int rop_flush_database(redisContext* conn);
 
 /* -------------------------------------------*/
 /**
@@ -136,7 +135,7 @@ int rop_flush_database(redisContext *conn);
  *                0 不存在
  */
 /* -------------------------------------------*/
-int rop_is_key_exist(redisContext *conn, char* key);
+int rop_is_key_exist(redisContext* conn, char* key);
 
 /* -------------------------------------------*/
 /**
@@ -150,8 +149,7 @@ int rop_is_key_exist(redisContext *conn, char* key);
  *                0 成功
  */
 /* -------------------------------------------*/
-int rop_del_key(redisContext *conn, char *key);
-
+int rop_del_key(redisContext* conn, char* key);
 
 /* -------------------------------------------*/
 /**
@@ -164,7 +162,7 @@ int rop_del_key(redisContext *conn, char *key);
  *                    [abc]表示方括号中任意一个字母。
  */
 /* -------------------------------------------*/
-void rop_show_keys(redisContext *conn, char* pattern);
+void rop_show_keys(redisContext* conn, char* pattern);
 
 /* -------------------------------------------*/
 /**
@@ -179,7 +177,7 @@ void rop_show_keys(redisContext *conn, char* pattern);
  *        -1  FAIL
  */
 /* -------------------------------------------*/
-int rop_set_key_lifecycle(redisContext *conn, char *key, time_t delete_time);
+int rop_set_key_lifecycle(redisContext* conn, char* key, time_t delete_time);
 
 /* -------------------------------------------*/
 /**
@@ -197,10 +195,10 @@ int rop_set_key_lifecycle(redisContext *conn, char *key, time_t delete_time);
  */
 /* -------------------------------------------*/
 int rop_create_or_replace_hash_table(redisContext* conn,
-                                     char* key, 
-                                     unsigned int element_num, 
-                                     RFIELDS fields, 
-                                     RVALUES values);
+    char* key,
+    unsigned int element_num,
+    RFIELDS fields,
+    RVALUES values);
 
 /* -------------------------------------------*/
 /**
@@ -215,8 +213,7 @@ int rop_create_or_replace_hash_table(redisContext* conn,
  *			-1		fail
  */
 /* -------------------------------------------*/
-int rop_hincrement_one_field(redisContext *conn, char *key, char *field, unsigned int num);
-
+int rop_hincrement_one_field(redisContext* conn, char* key, char* field, unsigned int num);
 
 /* -------------------------------------------*/
 /**
@@ -233,7 +230,7 @@ int rop_hincrement_one_field(redisContext *conn, char *key, char *field, unsigne
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_hash_set_append(redisContext *conn, char *key, RFIELDS fields, RVALUES values, int val_num);
+int rop_hash_set_append(redisContext* conn, char* key, RFIELDS fields, RVALUES values, int val_num);
 
 /* -------------------------------------------*/
 /**
@@ -249,7 +246,7 @@ int rop_hash_set_append(redisContext *conn, char *key, RFIELDS fields, RVALUES v
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_hash_set(redisContext *conn, char *key, char *field, char *value);
+int rop_hash_set(redisContext* conn, char* key, char* field, char* value);
 
 /* -------------------------------------------*/
 /**
@@ -265,7 +262,7 @@ int rop_hash_set(redisContext *conn, char *key, char *field, char *value);
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_hash_get(redisContext *conn, char *key, char *field, char *value);
+int rop_hash_get(redisContext* conn, char* key, char* field, char* value);
 
 /* -------------------------------------------*/
 /**
@@ -280,8 +277,7 @@ int rop_hash_get(redisContext *conn, char *key, char *field, char *value);
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_hash_del(redisContext *conn, char *key, char *field);
-
+int rop_hash_del(redisContext* conn, char* key, char* field);
 
 /* -------------------------------------------*/
 /**
@@ -297,7 +293,7 @@ int rop_hash_del(redisContext *conn, char *key, char *field);
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_list_push_append(redisContext *conn, char *key, RVALUES values, int val_num);
+int rop_list_push_append(redisContext* conn, char* key, RVALUES values, int val_num);
 
 /* -------------------------------------------*/
 /**
@@ -310,7 +306,7 @@ int rop_list_push_append(redisContext *conn, char *key, RVALUES values, int val_
  * @returns   
  */
 /* -------------------------------------------*/
-int rop_list_push(redisContext *conn, char *key, char *value);
+int rop_list_push(redisContext* conn, char* key, char* value);
 
 /* -------------------------------------------*/
 /**
@@ -324,7 +320,7 @@ int rop_list_push(redisContext *conn, char *key, char *value);
  *            -1 fail
  */
 /* -------------------------------------------*/
-int rop_get_list_cnt(redisContext *conn, char *key);
+int rop_get_list_cnt(redisContext* conn, char* key);
 
 /* -------------------------------------------*/
 /**
@@ -345,7 +341,7 @@ int rop_get_list_cnt(redisContext *conn, char *key);
  *            -1 FAIL
  */
 /* -------------------------------------------*/
-int rop_trim_list(redisContext *conn, char *key, int begin, int end);
+int rop_trim_list(redisContext* conn, char* key, int begin, int end);
 
 /* -------------------------------------------*/
 /**
@@ -359,8 +355,7 @@ int rop_trim_list(redisContext *conn, char *key, int begin, int end);
  *			-1 FAIL
  */
 /* -------------------------------------------*/
-int rop_range_list(redisContext *conn, char *key, int from_pos, int count, RVALUES values, int *get_num);
-
+int rop_range_list(redisContext* conn, char* key, int from_pos, int count, RVALUES values, int* get_num);
 
 /* -------------------------------------------*/
 /**
@@ -375,8 +370,7 @@ int rop_range_list(redisContext *conn, char *key, int from_pos, int count, RVALU
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_redis_append(redisContext *conn, RCOMMANDS cmds, int cmd_num);
-
+int rop_redis_append(redisContext* conn, RCOMMANDS cmds, int cmd_num);
 
 /* -------------------------------------------*/
 /**
@@ -390,7 +384,7 @@ int rop_redis_append(redisContext *conn, RCOMMANDS cmds, int cmd_num);
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_redis_command(redisContext *conn, char *cmd);
+int rop_redis_command(redisContext* conn, char* cmd);
 
 /* -------------------------------------------*/
 /**
@@ -400,8 +394,7 @@ int rop_redis_command(redisContext *conn, char *cmd);
  * @param reply        返回的命令结果
  */
 /* -------------------------------------------*/
-void rop_test_reply_type(redisReply *reply);
-
+void rop_test_reply_type(redisReply* reply);
 
 /* -------------------------------------------*/
 /**
@@ -416,7 +409,7 @@ void rop_test_reply_type(redisReply *reply);
  *        -1  FAIL
  */
 /* -------------------------------------------*/
-int rop_set_string(redisContext *conn, char *key, char *value);
+int rop_set_string(redisContext* conn, char* key, char* value);
 
 /* -------------------------------------------*/
 /**
@@ -432,7 +425,7 @@ int rop_set_string(redisContext *conn, char *key, char *value);
  *        -1  FAIL
  */
 /* -------------------------------------------*/
-int rop_setex_string(redisContext *conn, char *key, unsigned int seconds, char *value);
+int rop_setex_string(redisContext* conn, char* key, unsigned int seconds, char* value);
 
 /* -------------------------------------------*/
 /**
@@ -447,8 +440,7 @@ int rop_setex_string(redisContext *conn, char *key, unsigned int seconds, char *
  *        -1  FAIL
  */
 /* -------------------------------------------*/
-int rop_get_string(redisContext *conn, char *key, char *value);
-
+int rop_get_string(redisContext* conn, char* key, char* value);
 
 //==================有序集合相关操作====================
 
@@ -467,7 +459,7 @@ int rop_get_string(redisContext *conn, char *key, char *value);
  *            -1           fail
  */
 /* -------------------------------------------*/
-int rop_zset_add(redisContext *conn, char* key, long score, char* member);
+int rop_zset_add(redisContext* conn, char* key, long score, char* member);
 
 /* -------------------------------------------*/
 /**
@@ -483,7 +475,7 @@ int rop_zset_add(redisContext *conn, char* key, long score, char* member);
  *            -1            fail
  */
 /* -------------------------------------------*/
-int rop_zset_zrem(redisContext *conn, char* key, char* member);
+int rop_zset_zrem(redisContext* conn, char* key, char* member);
 
 /* -------------------------------------------*/
 /**
@@ -498,7 +490,7 @@ int rop_zset_zrem(redisContext *conn, char* key, char* member);
  *            -1            fail
  */
 /* -------------------------------------------*/
-int rop_zset_del_all(redisContext *conn, char* key);
+int rop_zset_del_all(redisContext* conn, char* key);
 
 /* -------------------------------------------*/
 /**
@@ -519,8 +511,7 @@ int rop_zset_del_all(redisContext *conn, char* key);
  *      0 succ, -1 fail
  */
 /* -------------------------------------------*/
-extern int rop_zset_zrevrange(redisContext *conn, char *key, int from_pos, int end_pos, RVALUES values, int *get_num);
-
+extern int rop_zset_zrevrange(redisContext* conn, char* key, int from_pos, int end_pos, RVALUES values, int* get_num);
 
 /* -------------------------------------------*/
 /**
@@ -536,7 +527,7 @@ extern int rop_zset_zrevrange(redisContext *conn, char *key, int from_pos, int e
  *            -1            fail
  */
 /* -------------------------------------------*/
-int rop_zset_increment(redisContext *conn, char* key, char* member);
+int rop_zset_increment(redisContext* conn, char* key, char* member);
 
 /* -------------------------------------------*/
 /**
@@ -550,8 +541,7 @@ int rop_zset_increment(redisContext *conn, char* key, char* member);
  *			-1 fail
  */
 /* -------------------------------------------*/
-int rop_zset_zcard(redisContext *conn, char *key);
-
+int rop_zset_zcard(redisContext* conn, char* key);
 
 /* -------------------------------------------*/
 /**
@@ -566,7 +556,7 @@ int rop_zset_zcard(redisContext *conn, char *key);
  *            -1            fail
  */
 /* -------------------------------------------*/
-int rop_zset_get_score(redisContext *conn, char *key, char *member);
+int rop_zset_get_score(redisContext* conn, char* key, char* member);
 
 /* -------------------------------------------*/
 /**
@@ -582,8 +572,7 @@ int rop_zset_get_score(redisContext *conn, char *key, char *member);
  *            -1           出错
  */
 /* -------------------------------------------*/
-extern int rop_zset_exit(redisContext *conn, char *key, char *member);
-
+extern int rop_zset_exit(redisContext* conn, char* key, char* member);
 
 /* -------------------------------------------*/
 /**
@@ -600,6 +589,6 @@ extern int rop_zset_exit(redisContext *conn, char *key, char *member);
  *            -1        FAIL
  */
 /* -------------------------------------------*/
-int rop_zset_increment_append(redisContext *conn, char *key, RVALUES values, int val_num);
+int rop_zset_increment_append(redisContext* conn, char* key, RVALUES values, int val_num);
 
 #endif

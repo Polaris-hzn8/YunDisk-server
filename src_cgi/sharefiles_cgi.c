@@ -1,36 +1,36 @@
-/**
- * @file sharefiles_cgi.c
- * @brief  共享文件列表展示CGI程序
- * @author Mike
- * @version 2.0
- * @date 2017年3月7日21:46:57
- */
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: sharefiles_cgi.c
+ Update Time: Wed 16 Aug 2023 17:52:17 CST
+ brief: 共享文件列表展示
+*/
 
+#include "cJSON.h"
+#include "cfg.h"
+#include "deal_mysql.h"
 #include "fcgi_config.h"
 #include "fcgi_stdio.h"
+#include "make_log.h" //日志头文件
+#include "redis_keys.h"
+#include "redis_op.h"
+#include "util_cgi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "make_log.h" //日志头文件
-#include "util_cgi.h"
-#include "deal_mysql.h"
-#include "redis_keys.h"
-#include "redis_op.h"
-#include "cfg.h"
-#include "cJSON.h"
 #include <sys/time.h>
 
-#define SHAREFILES_LOG_MODULE       "cgi"
-#define SHAREFILES_LOG_PROC         "sharefiles"
+#define SHAREFILES_LOG_MODULE "cgi"
+#define SHAREFILES_LOG_PROC "sharefiles"
 
 //mysql 数据库配置信息 用户名， 密码， 数据库名称
-static char mysql_user[128] = {0};
-static char mysql_pwd[128] = {0};
-static char mysql_db[128] = {0};
+static char mysql_user[128] = { 0 };
+static char mysql_pwd[128] = { 0 };
+static char mysql_db[128] = { 0 };
 
 //redis 服务器ip、端口
-static char redis_ip[30] = {0};
-static char redis_port[10] = {0};
+static char redis_ip[30] = { 0 };
+static char redis_port[10] = { 0 };
 
 //读取配置信息
 void read_cfg()
@@ -50,14 +50,13 @@ void read_cfg()
 //获取共享文件个数
 void get_share_files_count()
 {
-    char sql_cmd[SQL_MAX_LEN] = {0};
-    MYSQL *conn = NULL;
+    char sql_cmd[SQL_MAX_LEN] = { 0 };
+    MYSQL* conn = NULL;
     long line = 0;
 
     //connect the database
     conn = msql_conn(mysql_user, mysql_pwd, mysql_db);
-    if (conn == NULL)
-    {
+    if (conn == NULL) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "msql_conn err\n");
         goto END;
     }
@@ -66,10 +65,9 @@ void get_share_files_count()
     mysql_query(conn, "set names utf8");
 
     sprintf(sql_cmd, "select count from user_file_count where user=\"%s\"", "xxx_share_xxx_file_xxx_list_xxx_count_xxx");
-    char tmp[512] = {0};
+    char tmp[512] = { 0 };
     int ret2 = process_result_one(conn, sql_cmd, tmp); //指向sql语句
-    if(ret2 != 0)
-    {
+    if (ret2 != 0) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 操作失败\n", sql_cmd);
         goto END;
     }
@@ -77,8 +75,7 @@ void get_share_files_count()
     line = atol(tmp); //字符串转长整形
 
 END:
-    if(conn != NULL)
-    {
+    if (conn != NULL) {
         mysql_close(conn);
     }
 
@@ -87,7 +84,7 @@ END:
 }
 
 //解析的json包
-int get_fileslist_json_info(char *buf, int *p_start, int *p_count)
+int get_fileslist_json_info(char* buf, int* p_start, int* p_count)
 {
     int ret = 0;
 
@@ -100,18 +97,16 @@ int get_fileslist_json_info(char *buf, int *p_start, int *p_count)
 
     //解析json包
     //解析一个json字符串为cJSON对象
-    cJSON * root = cJSON_Parse(buf);
-    if(NULL == root)
-    {
+    cJSON* root = cJSON_Parse(buf);
+    if (NULL == root) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "cJSON_Parse err\n");
         ret = -1;
         goto END;
     }
 
     //文件起点
-    cJSON *child2 = cJSON_GetObjectItem(root, "start");
-    if(NULL == child2)
-    {
+    cJSON* child2 = cJSON_GetObjectItem(root, "start");
+    if (NULL == child2) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "cJSON_GetObjectItem err\n");
         ret = -1;
         goto END;
@@ -120,9 +115,8 @@ int get_fileslist_json_info(char *buf, int *p_start, int *p_count)
     *p_start = child2->valueint;
 
     //文件请求个数
-    cJSON *child3 = cJSON_GetObjectItem(root, "count");
-    if(NULL == child3)
-    {
+    cJSON* child3 = cJSON_GetObjectItem(root, "count");
+    if (NULL == child3) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "cJSON_GetObjectItem err\n");
         ret = -1;
         goto END;
@@ -131,9 +125,8 @@ int get_fileslist_json_info(char *buf, int *p_start, int *p_count)
     *p_count = child3->valueint;
 
 END:
-    if(root != NULL)
-    {
-        cJSON_Delete(root);//删除json对象
+    if (root != NULL) {
+        cJSON_Delete(root); //删除json对象
         root = NULL;
     }
 
@@ -145,18 +138,17 @@ END:
 int get_share_filelist(int start, int count)
 {
     int ret = 0;
-    char sql_cmd[SQL_MAX_LEN] = {0};
-    MYSQL *conn = NULL;
-    cJSON *root = NULL;
-    cJSON *array =NULL;
-    char *out = NULL;
-    char *out2 = NULL;
-    MYSQL_RES *res_set = NULL;
+    char sql_cmd[SQL_MAX_LEN] = { 0 };
+    MYSQL* conn = NULL;
+    cJSON* root = NULL;
+    cJSON* array = NULL;
+    char* out = NULL;
+    char* out2 = NULL;
+    MYSQL_RES* res_set = NULL;
 
     //connect the database
     conn = msql_conn(mysql_user, mysql_pwd, mysql_db);
-    if (conn == NULL)
-    {
+    if (conn == NULL) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "msql_conn err\n");
         ret = -1;
         goto END;
@@ -165,22 +157,19 @@ int get_share_filelist(int start, int count)
     //设置数据库编码，主要处理中文编码问题
     mysql_query(conn, "set names utf8");
 
-
     //sql语句
     sprintf(sql_cmd, "select share_file_list.*, file_info.url, file_info.size, file_info.type from file_info, share_file_list where file_info.md5 = share_file_list.md5 limit %d, %d", start, count);
 
     LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 在操作\n", sql_cmd);
 
-    if (mysql_query(conn, sql_cmd) != 0)
-    {
+    if (mysql_query(conn, sql_cmd) != 0) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 操作失败: %s\n", sql_cmd, mysql_error(conn));
         ret = -1;
         goto END;
     }
 
-    res_set = mysql_store_result(conn);/*生成结果集*/
-    if (res_set == NULL)
-    {
+    res_set = mysql_store_result(conn); /*生成结果集*/
+    if (res_set == NULL) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "smysql_store_result error!\n");
         ret = -1;
         goto END;
@@ -189,8 +178,7 @@ int get_share_filelist(int start, int count)
     ulong line = 0;
     //mysql_num_rows接受由mysql_store_result返回的结果结构集，并返回结构集中的行数
     line = mysql_num_rows(res_set);
-    if (line == 0)
-    {
+    if (line == 0) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "mysql_num_rows(res_set) failed\n");
         ret = -1;
         goto END;
@@ -202,9 +190,8 @@ int get_share_filelist(int start, int count)
     array = cJSON_CreateArray();
     // mysql_fetch_row从使用mysql_store_result得到的结果结构中提取一行，并把它放到一个行结构中。
     // 当数据用完或发生错误时返回NULL.
-    while ((row = mysql_fetch_row(res_set)) != NULL)
-    {
-         //array[i]:
+    while ((row = mysql_fetch_row(res_set)) != NULL) {
+        //array[i]:
         cJSON* item = cJSON_CreateObject();
 
         //mysql_num_fields获取结果中列的个数
@@ -231,54 +218,45 @@ int get_share_filelist(int start, int count)
 
         */
         //-- user	文件所属用户
-        if(row[0] != NULL)
-        {
+        if (row[0] != NULL) {
             cJSON_AddStringToObject(item, "user", row[0]);
         }
 
         //-- md5 文件md5
-        if(row[1] != NULL)
-        {
+        if (row[1] != NULL) {
             cJSON_AddStringToObject(item, "md5", row[1]);
         }
 
         //-- createtime 文件创建时间
-        if(row[2] != NULL)
-        {
+        if (row[2] != NULL) {
             cJSON_AddStringToObject(item, "time", row[2]);
         }
 
         //-- filename 文件名字
-        if(row[3] != NULL)
-        {
+        if (row[3] != NULL) {
             cJSON_AddStringToObject(item, "filename", row[3]);
         }
 
         //-- shared_status 共享状态, 0为没有共享， 1为共享
         cJSON_AddNumberToObject(item, "share_status", 1);
 
-
         //-- pv 文件下载量，默认值为0，下载一次加1
-        if(row[4] != NULL)
-        {
-            cJSON_AddNumberToObject(item, "pv", atol( row[4] ));
+        if (row[4] != NULL) {
+            cJSON_AddNumberToObject(item, "pv", atol(row[4]));
         }
 
         //-- url 文件url
-        if(row[5] != NULL)
-        {
+        if (row[5] != NULL) {
             cJSON_AddStringToObject(item, "url", row[5]);
         }
 
         //-- size 文件大小, 以字节为单位
-        if(row[6] != NULL)
-        {
-            cJSON_AddNumberToObject(item, "size", atol( row[6] ));
+        if (row[6] != NULL) {
+            cJSON_AddNumberToObject(item, "size", atol(row[6]));
         }
 
         //-- type 文件类型： png, zip, mp4……
-        if(row[7] != NULL)
-        {
+        if (row[7] != NULL) {
             cJSON_AddStringToObject(item, "type", row[7]);
         }
 
@@ -292,39 +270,31 @@ int get_share_filelist(int start, int count)
     LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s\n", out);
 
 END:
-    if(ret == 0)
-    {
+    if (ret == 0) {
         printf("%s", out); //给前端反馈信息
-    }
-    else
-    {   //失败
+    } else { //失败
         out2 = NULL;
         out2 = return_status("015");
     }
-    if(out2 != NULL)
-    {
+    if (out2 != NULL) {
         printf(out2); //给前端反馈错误码
         free(out2);
     }
 
-    if(res_set != NULL)
-    {
+    if (res_set != NULL) {
         //完成所有对数据的操作后，调用mysql_free_result来善后处理
         mysql_free_result(res_set);
     }
 
-    if(conn != NULL)
-    {
+    if (conn != NULL) {
         mysql_close(conn);
     }
 
-    if(root != NULL)
-    {
+    if (root != NULL) {
         cJSON_Delete(root);
     }
 
-    if(out != NULL)
-    {
+    if (out != NULL) {
         free(out);
     }
 
@@ -342,22 +312,21 @@ int get_ranking_filelist(int start, int count)
     */
 
     int ret = 0;
-    char sql_cmd[SQL_MAX_LEN] = {0};
-    MYSQL *conn = NULL;
-    cJSON *root = NULL;
+    char sql_cmd[SQL_MAX_LEN] = { 0 };
+    MYSQL* conn = NULL;
+    cJSON* root = NULL;
     RVALUES value = NULL;
-    cJSON *array =NULL;
-    char *out = NULL;
-    char *out2 = NULL;
-    char tmp[512] = {0};
+    cJSON* array = NULL;
+    char* out = NULL;
+    char* out2 = NULL;
+    char tmp[512] = { 0 };
     int ret2 = 0;
-    MYSQL_RES *res_set = NULL;
-    redisContext * redis_conn = NULL;
+    MYSQL_RES* res_set = NULL;
+    redisContext* redis_conn = NULL;
 
     //连接redis数据库
     redis_conn = rop_connectdb_nopwd(redis_ip, redis_port);
-    if (redis_conn == NULL)
-    {
+    if (redis_conn == NULL) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "redis connected error");
         ret = -1;
         goto END;
@@ -365,8 +334,7 @@ int get_ranking_filelist(int start, int count)
 
     //connect the database
     conn = msql_conn(mysql_user, mysql_pwd, mysql_db);
-    if (conn == NULL)
-    {
+    if (conn == NULL) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "msql_conn err\n");
         ret = -1;
         goto END;
@@ -378,8 +346,7 @@ int get_ranking_filelist(int start, int count)
     //===1、mysql共享文件数量
     sprintf(sql_cmd, "select count from user_file_count where user=\"%s\"", "xxx_share_xxx_file_xxx_list_xxx_count_xxx");
     ret2 = process_result_one(conn, sql_cmd, tmp); //指向sql语句
-    if(ret2 != 0)
-    {
+    if (ret2 != 0) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 操作失败\n", sql_cmd);
         ret = -1;
         goto END;
@@ -389,8 +356,7 @@ int get_ranking_filelist(int start, int count)
 
     //===2、redis共享文件数量
     int redis_num = rop_zset_zcard(redis_conn, FILE_PUBLIC_ZSET);
-    if(redis_num == -1)
-    {
+    if (redis_num == -1) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "rop_zset_zcard 操作失败\n");
         ret = -1;
         goto END;
@@ -399,8 +365,7 @@ int get_ranking_filelist(int start, int count)
     LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "sql_num = %d, redis_num = %d\n", sql_num, redis_num);
 
     //===3、mysql共享文件数量和redis共享文件数量对比，判断是否相等
-    if(redis_num != sql_num)
-    {//===4、如果不相等，清空redis数据，重新从mysql中导入数据到redis (mysql和redis交互)
+    if (redis_num != sql_num) { //===4、如果不相等，清空redis数据，重新从mysql中导入数据到redis (mysql和redis交互)
 
         //a) 清空redis有序数据
         rop_del_key(redis_conn, FILE_PUBLIC_ZSET);
@@ -412,16 +377,14 @@ int get_ranking_filelist(int start, int count)
 
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 在操作\n", sql_cmd);
 
-        if (mysql_query(conn, sql_cmd) != 0)
-        {
+        if (mysql_query(conn, sql_cmd) != 0) {
             LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s 操作失败: %s\n", sql_cmd, mysql_error(conn));
             ret = -1;
             goto END;
         }
 
-        res_set = mysql_store_result(conn);/*生成结果集*/
-        if (res_set == NULL)
-        {
+        res_set = mysql_store_result(conn); /*生成结果集*/
+        if (res_set == NULL) {
             LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "smysql_store_result error!\n");
             ret = -1;
             goto END;
@@ -430,27 +393,24 @@ int get_ranking_filelist(int start, int count)
         ulong line = 0;
         //mysql_num_rows接受由mysql_store_result返回的结果结构集，并返回结构集中的行数
         line = mysql_num_rows(res_set);
-        if (line == 0)
-        {
+        if (line == 0) {
             LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "mysql_num_rows(res_set) failed\n");
             ret = -1;
             goto END;
         }
 
-         MYSQL_ROW row;
+        MYSQL_ROW row;
         // mysql_fetch_row从使用mysql_store_result得到的结果结构中提取一行，并把它放到一个行结构中。
         // 当数据用完或发生错误时返回NULL.
-        while ((row = mysql_fetch_row(res_set)) != NULL)
-        {
+        while ((row = mysql_fetch_row(res_set)) != NULL) {
             //md5, filename, pv
-            if(row[0] == NULL || row[1] == NULL || row[2] == NULL)
-            {
+            if (row[0] == NULL || row[1] == NULL || row[2] == NULL) {
                 LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "mysql_fetch_row(res_set)) failed\n");
                 ret = -1;
                 goto END;
             }
 
-            char fileid[1024] = {0};
+            char fileid[1024] = { 0 };
             sprintf(fileid, "%s%s", row[0], row[1]); //文件标示，md5+文件名
 
             //增加有序集合成员
@@ -463,19 +423,17 @@ int get_ranking_filelist(int start, int count)
 
     //===5、从redis读取数据，给前端反馈相应信息
     //char value[count][1024];
-    value  = (RVALUES)calloc(count, VALUES_ID_SIZE); //堆区请求空间
-    if(value == NULL)
-    {
+    value = (RVALUES)calloc(count, VALUES_ID_SIZE); //堆区请求空间
+    if (value == NULL) {
         ret = -1;
         goto END;
     }
 
     int n = 0;
-    int end = start + count - 1;//加载资源的结束位置
+    int end = start + count - 1; //加载资源的结束位置
     //降序获取有序集合的元素
     ret = rop_zset_zrevrange(redis_conn, FILE_PUBLIC_ZSET, start, end, value, &n);
-    if(ret != 0)
-    {
+    if (ret != 0) {
         LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "rop_zset_zrevrange 操作失败\n");
         goto END;
     }
@@ -483,8 +441,7 @@ int get_ranking_filelist(int start, int count)
     root = cJSON_CreateObject();
     array = cJSON_CreateArray();
     //遍历元素个数
-    for(int i = 0; i < n; ++i)
-    {
+    for (int i = 0; i < n; ++i) {
         //array[i]:
         cJSON* item = cJSON_CreateObject();
 
@@ -496,30 +453,25 @@ int get_ranking_filelist(int start, int count)
         */
 
         //-- filename 文件名字
-        char filename[1024] = {0};
+        char filename[1024] = { 0 };
         ret = rop_hash_get(redis_conn, FILE_NAME_HASH, value[i], filename);
-        if(ret != 0)
-        {
+        if (ret != 0) {
             LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "rop_hash_get 操作失败\n");
             ret = -1;
             goto END;
         }
         cJSON_AddStringToObject(item, "filename", filename);
 
-
         //-- pv 文件下载量
         int score = rop_zset_get_score(redis_conn, FILE_PUBLIC_ZSET, value[i]);
-        if(score == -1)
-        {
+        if (score == -1) {
             LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "rop_zset_get_score 操作失败\n");
             ret = -1;
             goto END;
         }
         cJSON_AddNumberToObject(item, "pv", score);
 
-
         cJSON_AddItemToArray(array, item);
-
     }
 
     cJSON_AddItemToObject(root, "files", array);
@@ -529,52 +481,41 @@ int get_ranking_filelist(int start, int count)
     LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "%s\n", out);
 
 END:
-    if(ret == 0)
-    {
+    if (ret == 0) {
         printf("%s", out); //给前端反馈信息
-    }
-    else
-    {   //失败
+    } else { //失败
         out2 = NULL;
         out2 = return_status("015");
     }
-    if(out2 != NULL)
-    {
+    if (out2 != NULL) {
         printf(out2); //给前端反馈错误码
         free(out2);
     }
 
-    if(res_set != NULL)
-    {
+    if (res_set != NULL) {
         //完成所有对数据的操作后，调用mysql_free_result来善后处理
         mysql_free_result(res_set);
     }
 
-    if(redis_conn != NULL)
-    {
+    if (redis_conn != NULL) {
         rop_disconnect(redis_conn);
     }
 
-    if(conn != NULL)
-    {
+    if (conn != NULL) {
         mysql_close(conn);
     }
 
-    if(value != NULL)
-    {
+    if (value != NULL) {
         free(value);
     }
 
-    if(root != NULL)
-    {
+    if (root != NULL) {
         cJSON_Delete(root);
     }
 
-    if(out != NULL)
-    {
+    if (out != NULL) {
         free(out);
     }
-
 
     return ret;
 }
@@ -587,11 +528,10 @@ int main()
     read_cfg();
 
     //阻塞等待用户连接
-    while (FCGI_Accept() >= 0)
-    {
+    while (FCGI_Accept() >= 0) {
 
         // 获取URL地址 "?" 后面的内容
-        char *query = getenv("QUERY_STRING");
+        char* query = getenv("QUERY_STRING");
 
         //解析命令
         query_parse_key_value(query, "cmd", cmd, NULL);
@@ -602,33 +542,24 @@ int main()
         if (strcmp(cmd, "count") == 0) //count 获取用户文件个数
         {
             get_share_files_count(); //获取共享文件个数
-        }
-        else
-        {
-            char *contentLength = getenv("CONTENT_LENGTH");
+        } else {
+            char* contentLength = getenv("CONTENT_LENGTH");
             int len;
 
-            if( contentLength == NULL )
-            {
+            if (contentLength == NULL) {
                 len = 0;
-            }
-            else
-            {
+            } else {
                 len = atoi(contentLength); //字符串转整型
             }
 
-            if (len <= 0)
-            {
+            if (len <= 0) {
                 printf("No data from standard input.<p>\n");
                 LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "len = 0, No data from standard input\n");
-            }
-            else
-            {
-                char buf[4*1024] = {0};
+            } else {
+                char buf[4 * 1024] = { 0 };
                 int ret = 0;
                 ret = fread(buf, 1, len, stdin); //从标准输入(web服务器)读取内容
-                if(ret == 0)
-                {
+                if (ret == 0) {
                     LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "fread(buf, 1, len, stdin) err\n");
                     continue;
                 }
@@ -643,21 +574,14 @@ int main()
                 int count; //文件个数
                 get_fileslist_json_info(buf, &start, &count); //通过json包获取信息
                 LOG(SHAREFILES_LOG_MODULE, SHAREFILES_LOG_PROC, "start = %d, count = %d\n", start, count);
-                 if (strcmp(cmd, "normal") == 0)
-                 {
+                if (strcmp(cmd, "normal") == 0) {
                     get_share_filelist(start, count); //获取共享文件列表
-                 }
-                 else if(strcmp(cmd, "pvdesc") == 0)
-                 {
-                    get_ranking_filelist(start, count);//获取共享文件排行版
-                 }
-
-
+                } else if (strcmp(cmd, "pvdesc") == 0) {
+                    get_ranking_filelist(start, count); //获取共享文件排行版
+                }
             }
         }
-
     }
 
     return 0;
 }
-

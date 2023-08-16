@@ -1,3 +1,11 @@
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: base64.h
+ Update Time: Wed 16 Aug 2023 18:08:32 CST
+ brief: 
+*/
+
 #ifndef BASE64_H
 #define BASE64_H
 
@@ -6,13 +14,12 @@
 //binlength: 源字符串长度
 //base64：目的字符串，base64字符串
 //返回值：base64字符串
-char * base64_encode( const unsigned char * bindata, int binlength, char * base64 );
+char* base64_encode(const unsigned char* bindata, int binlength, char* base64);
 
 //解码base64
 //base64：源字符串
 //bindata: 目的字符串
 //返回值：目的字符串长度
-int base64_decode( const char * base64, unsigned char * bindata );
+int base64_decode(const char* base64, unsigned char* bindata);
 
 #endif // BASE64_H
-

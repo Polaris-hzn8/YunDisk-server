@@ -1,21 +1,27 @@
-#include <stdio.h>
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: myredis.c
+ Update Time: Wed 16 Aug 2023 18:12:14 CST
+ brief: 
+*/
+
 #include <hiredis.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 int main(int argc, const char* argv[])
 {
-    if(argc < 2)
-    {
+    if (argc < 2) {
         printf("%s port\n", argv[1]);
         exit(1);
     }
 
     // 连接redis服务器
-    redisContext * res = redisConnect("127.0.0.1", atoi(argv[1]));
-    if(res == NULL)
-    {
+    redisContext* res = redisConnect("127.0.0.1", atoi(argv[1]));
+    if (res == NULL) {
         printf("redis server connect fail...\n");
         exit(1);
     }

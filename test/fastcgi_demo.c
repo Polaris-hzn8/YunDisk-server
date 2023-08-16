@@ -1,48 +1,55 @@
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: fastcgi_demo.c
+ Update Time: Wed 16 Aug 2023 18:12:58 CST
+ brief: 
+*/
+
+#include "fcgi_config.h"
+#include "fcgi_stdio.h"
 #include <stdlib.h>
 #include <unistd.h>
-#include "fcgi_stdio.h"
-#include "fcgi_config.h"
 
 // linux系统函数库中的全局变量, 存储环境变量
-extern char **environ;
+extern char** environ;
 
-static void PrintEnv(char *label, char **envp)
+static void PrintEnv(char* label, char** envp)
 {
     printf("%s:<br>\n<pre>\n", label);
-    for ( ; *envp != NULL; envp++) {
+    for (; *envp != NULL; envp++) {
         printf("%s\n", *envp);
     }
     printf("</pre><p>\n");
 }
 
-int main ()
+int main()
 {
-    char **initialEnv = environ;
+    char** initialEnv = environ;
     int count = 0;
 
     // 有连接请求
     while (FCGI_Accept() >= 0) {
         // CONTENT_LENGTH post 数据的长度
-        char *contentLength = getenv("CONTENT_LENGTH");
+        char* contentLength = getenv("CONTENT_LENGTH");
         int len;
 
         printf("Content-type: text/html\r\n"
                "\r\n"
                "<title>FastCGI echo</title>"
                "<h1>FastCGI echo</h1>\n"
-               "Request number %d,  Process ID: %d<p>\n", ++count, getpid());
+               "Request number %d,  Process ID: %d<p>\n",
+            ++count, getpid());
 
         if (contentLength != NULL) {
             len = strtol(contentLength, NULL, 10);
-        }
-        else {
+        } else {
             len = 0;
         }
 
         if (len <= 0) {
             printf("No data from standard input.<p>\n");
-        }
-        else {
+        } else {
             int i, ch;
 
             printf("Standard input:<br>\n<pre>\n");

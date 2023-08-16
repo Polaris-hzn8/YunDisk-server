@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "util_cgi.h": "c",
+        "make_log.h": "c",
+        "cfg.h": "c"
+    }
+}

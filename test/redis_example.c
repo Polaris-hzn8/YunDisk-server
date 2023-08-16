@@ -1,3 +1,11 @@
+/*
+ Reviser: Polaris_hzn8
+ Email: 3453851623@qq.com
+ filename: redis_example.c
+ Update Time: Wed 16 Aug 2023 18:12:04 CST
+ brief: 
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
